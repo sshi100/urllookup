@@ -1,8 +1,8 @@
 # **URL Lookup Service**
 
-There is an HTTP proxy that is scanning traffic looking for malware URLs. Before allowing HTTP connections to be made, this proxy asks a service that maintains several databases of malware   URLs if the resource being requested is known to contain malware. Write a small web service,   in the language/framework your choice, that responds to GET requests where the caller passes   in a URL and the service responds with some information about that URL. The GET requests look   like this:
+There is an HTTP proxy that is scanning traffic looking for malware URLs. Before allowing HTTP connections to be made, this proxy asks a service that maintains several databases of malware   URLs if the resource being requested is known to contain malware. Write a small web service, that responds to GET requests where the caller passes in a URL and the service responds with some information about that URL. The GET requests look like this:
 
-```GET /urlinfo/1/{hostname_and_port}/{original_path_and_query_string}```
+   ```GET /urlinfo/1/{hostname_and_port}/{original_path_and_query_string}```
 
 The caller wants to know if it is safe to access that URL or not. As the implementer you get to choose the response format and structure. These lookups are blocking users from accessing the URL until the caller receives a response from your service. The service must be containerized.
 
@@ -33,25 +33,61 @@ For #3, use another backend job to do batch update every 10 minutes for new URLs
   - docker swarm cluster
 
 
-## **Installation**
+## **Stack Deployment**
+Use docker compose and swarm to create this application stack.
 
 1. checkout code from https://github.com/sshi100/urllookup
+
 2. build and deploy
+
   - ```cd docker; docker-compose build; docker swarm init; docker stack deploy --compose-file docker-compose.yml urllookup```
-  - ```docker service list```
-3. check
-  - ```curl http://127.0.0.1/```
+
+3. service validate
+  run `curl http://127.0.0.1/`, it should return `{"ping":"PONG"}`
+
+Now, the stack has been deployed successfully.
+
+*Note: to re-deploy the services, you may run `docker stack rm urllookup` and for debugging you may run `docker service logs <service>`.
+
+For more detailed information about docker swarm deployment, please check https://docs.docker.com/get-started/swarm-deploy/  
+
+
+## **Stack insight**
+
+  run `docker service list`, you will find something as below:
+  ```
+ID             NAME                     MODE         REPLICAS   IMAGE                  PORTS
+qhrrlswtnd2b   urllookup_datastore1     replicated   1/1        redis:latest
+oqohuo41evap   urllookup_datastore2     replicated   1/1        redis:latest
+xbpztqkvbhd1   urllookup_datastore3     replicated   1/1        redis:latest
+jgsi6uh2spav   urllookup_loadbalancer   replicated   1/1        nginx:alpine           *:80->80/tcp
+frhfk50wf8lq   urllookup_lookup         replicated   2/2        lookupservice:latest   *:8081->8081/tcp
+kaec45wxv4t2   urllookup_updater        replicated   1/1        updater:latest         *:8082->8082/tcp
+  ```
+  with:
+  - 1x load balancer service (by nginx), fast to dispatch to lookup services
+  - 2x lookup service (by application cluster in python fastapi), to get data from data store service cluster
+  - 3x data store service (by redis cluster, datastore1 is the master), to store more data in memory for quick response and persistent in disk
+
+As a result, it guarantees to achieve the goal as required.
 
 
 ## **URL lookup**
-  - ```curl http://localhost/urlinfo/1/updat120.clanteam.com/ie7.htm```
+
+To check if a URL is safe or not, follow `/urlinfo/1/<domain>/<path>` as below:
+  - ```curl http://localhost/urlinfo/1/google.bad/item1.html``` which will return `{"is_safe": false}`
 
 
 ## **Blacklist update**
-TBD
+To add a single URL to blacklist:
+  - ```curl -X POST localhost:8002/urlupdate/1/default/google.bad/item1.html```
+To do a batch URL update on default blacklist (data/blacklist/default.txt):
+  - ```curl -X POST localhost/urlupdate_batch/1/default```
+To do a batch URL with a customized blacklist, create a new blacklist file as `mylist.txt` and put it into folder `data/blacklist`, and run:
+  - ```curl -X POST localhost/urlupdate_batch/1/mylist```
 
 
-## **Debugging**
+## **TODO**
 
-check service logs:
-- ```docker service logs <service>```
+- deploy to Kubernetes
+- deploy via CI/CD (CircleCI or GHA)

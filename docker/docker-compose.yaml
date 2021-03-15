@@ -29,6 +29,28 @@ services:
       - data
       - lb
 
+  # update backlist in data store
+  updater:
+    image: updater:latest
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.updater
+    ports:
+      - 8082:8082
+    environment:
+      - PORT=8082
+      - DATASTORE=datastore1
+      - BLACKLIST=/data/blacklist
+    depends_on:
+      - datastore1
+      - datastore2
+      - datastore3
+    volumes:
+      - "../data/blacklist:/data/blacklist"
+    networks:
+      - data
+      - lb
+
   # load balancer, here we use nginx
   loadbalancer:
     image: nginx:alpine
