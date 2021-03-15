@@ -1,0 +1,4 @@
+fastapi
+aioredis
+fastapi_plugins
+uvicorn

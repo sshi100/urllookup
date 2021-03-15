@@ -22,3 +22,14 @@ For #3, use another backend job to do batch update every 10 minutes for new URLs
 
 **Solution
 
+- Take python based FastAPI framework (https://fastapi.tiangolo.com/), reasons:
+  - fast: saying high performance with async support, can be compared with Golang and NodeJS
+  - community: a lot of projects, plugins
+  - integration: easy to connect with redis and database etc. fully leverage exisiting Python stuffs
+  - modern: designed for RESTful web service, with mordern openAPI, can be used to take over Django and Flask 
+
+- Take docker based infrastructure, with:
+  - nginx as Load Balancer to direct traffics to Web
+  - redis as Data Store to store URL blacklist
+  - docker composer
+  - docker swarm cluster

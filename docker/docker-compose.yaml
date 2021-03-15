@@ -1,0 +1,84 @@
+version: '3.7'
+
+services:
+
+  # main service, here we use a fastapi docker: https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker
+  lookup:
+    image: lookupservice:latest
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.webservice
+    environment:
+      - PORT=8081
+      - DATASTORE=datastore1
+    ports:
+      - 8081:8081
+    depends_on:
+      - datastore1
+      - datastore2
+      - datastore3
+    deploy:
+      replicas: 2
+      restart_policy:
+        max_attempts: 3
+        condition: on-failure
+      update_config:
+        parallelism: 3
+        delay: 10s
+    networks:
+      - data
+      - lb
+
+  # load balancer, here we use nginx
+  loadbalancer:
+    image: nginx:alpine
+    ports:
+      - published: 80
+        target: 80
+    depends_on:
+      - lookup
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    volumes:
+      - "./nginx-conf/nginx.conf:/etc/nginx/nginx.conf"
+    networks:
+      - lb
+
+  # data store services, here we use redis cluster
+  datastore1:
+    image: redis
+    entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      data:
+        ipv4_address: 10.10.20.1
+    volumes:
+      - "./redis-conf/redis-1-master.conf:/usr/local/etc/redis/redis.conf"
+  datastore2:
+    image: redis
+    entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      data:
+        ipv4_address: 10.10.20.2
+    volumes:
+      - "./redis-conf/redis-1-slave.conf:/usr/local/etc/redis/redis.conf"
+  datastore3:
+    image: redis
+    entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      data:
+        ipv4_address: 10.10.20.3
+    volumes:
+      - "./redis-conf/redis-1-slave.conf:/usr/local/etc/redis/redis.conf"
+
+networks:
+  lb:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.10.10.0/24"
+  data:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.10.20.0/24"
