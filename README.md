@@ -33,3 +33,21 @@ For #3, use another backend job to do batch update every 10 minutes for new URLs
   - redis as Data Store to store URL blacklist
   - docker composer
   - docker swarm cluster
+
+**Installation
+1. checkout code from https://github.com/sshi100/urllookup
+2. build and deploy
+  - ```cd docker; docker-compose build; docker swarm init; docker stack deploy --compose-file docker-compose.yml urllookup```
+  - ```docker service list```
+3. check
+  - ```curl http://127.0.0.1/
+
+** URL lookup
+  - ```curl http://localhost/urlinfo/1/updat120.clanteam.com/ie7.htm```
+
+**Blacklist update
+<TBD>
+
+**Debugging
+1. check service logs:
+- ```docker service logs <service>```
