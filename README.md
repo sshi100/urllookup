@@ -1,6 +1,4 @@
-# urllookup
-
-# **URL lookup service**
+# **URL Lookup Service**
 
 There is an HTTP proxy that is scanning traffic looking for malware URLs. Before allowing HTTP connections to be made, this proxy asks a service that maintains several databases of malware   URLs if the resource being requested is known to contain malware. Write a small web service,   in the language/framework your choice, that responds to GET requests where the caller passes   in a URL and the service responds with some information about that URL. The GET requests look   like this:
 
@@ -42,10 +40,10 @@ For #3, use another backend job to do batch update every 10 minutes for new URLs
   - ```cd docker; docker-compose build; docker swarm init; docker stack deploy --compose-file docker-compose.yml urllookup```
   - ```docker service list```
 3. check
-  - ```curl http://127.0.0.1/
+  - ```curl http://127.0.0.1/```
 
 
-## ** URL lookup
+## **URL lookup**
   - ```curl http://localhost/urlinfo/1/updat120.clanteam.com/ie7.htm```
 
 
