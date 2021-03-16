@@ -29,7 +29,7 @@ services:
       - data
       - lb
 
-  # update backlist in data store
+  # update service for backlist in data store
   updater:
     image: updater:latest
     build:
@@ -50,6 +50,23 @@ services:
     networks:
       - data
       - lb
+
+  # job to trigger updater
+  job:
+    image: ofelia:latest
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.cronjob
+    depends_on:
+      - updater
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      ofelia.job-local.update-job.schedule: "@every 5m"
+      ofelia.job-local.update-job.command: "curl -X POST updater:8082/urlupdate_batch/1/arriving"
+    networks:
+      - data
 
   # load balancer, here we use nginx
   loadbalancer:

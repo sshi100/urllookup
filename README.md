@@ -57,19 +57,22 @@ For more detailed information about docker swarm deployment, please check https:
   run `docker service list`, you will find something as below:
   ```
 ID             NAME                     MODE         REPLICAS   IMAGE                  PORTS
-qhrrlswtnd2b   urllookup_datastore1     replicated   1/1        redis:latest
-oqohuo41evap   urllookup_datastore2     replicated   1/1        redis:latest
-xbpztqkvbhd1   urllookup_datastore3     replicated   1/1        redis:latest
-jgsi6uh2spav   urllookup_loadbalancer   replicated   1/1        nginx:alpine           *:80->80/tcp
-frhfk50wf8lq   urllookup_lookup         replicated   2/2        lookupservice:latest   *:8081->8081/tcp
-kaec45wxv4t2   urllookup_updater        replicated   1/1        updater:latest         *:8082->8082/tcp
+iwnj2x3iz3d2   urllookup_datastore1     replicated   1/1        redis:latest
+wvt4n7c9fd9j   urllookup_datastore2     replicated   1/1        redis:latest
+lei17vm1gurq   urllookup_datastore3     replicated   1/1        redis:latest
+kokfai41tpkm   urllookup_job            replicated   1/1        ofelia:latest
+wapn4p3biv7l   urllookup_loadbalancer   replicated   1/1        nginx:alpine           *:80->80/tcp
+81ndumrl6rud   urllookup_lookup         replicated   2/2        lookupservice:latest   *:8081->8081/tcp
+kcilbdyxrzyh   urllookup_updater        replicated   1/1        updater:latest         *:8082->8082/tcp
   ```
   with:
-  - 1x load balancer service (by nginx), fast to dispatch to lookup services
-  - 2x lookup service (by application cluster in python fastapi), to get data from data store service cluster
-  - 3x data store service (by redis cluster, datastore1 is the master), to store more data in memory for quick response and persistent in disk
+  - urllookup_loadbalancer(1): load balancer service (by nginx), fast to dispatch to lookup services
+  - urllookup_lookup(2): lookup service (by application cluster in python fastapi), to get data from data store service cluster
+  - urllookup_datastore(3): data store service (by redis cluster, datastore1 is the master), to store more data in memory for quick response and persistent in disk
+  - urllookup_updater(1): update service to update data store based on provided default or customized URL blacklist
+  - urllookup_job(1): cronjob to monitor `arriving` blacklist and apply the changes every 5 minutes
 
-As a result, it guarantees to achieve the goal as required.
+As a result, the stack guarantees to reach the 3 goals as required.
 
 
 ## **URL lookup**
@@ -79,12 +82,22 @@ To check if a URL is safe or not, follow `/urlinfo/1/<domain>/<path>` as below:
 
 
 ## **Blacklist update**
-To add a single URL to blacklist:
-  - ```curl -X POST localhost:8002/urlupdate/1/default/google.bad/item1.html```
-To do a batch URL update on default blacklist (data/blacklist/default.txt):
+Provide two RESTful APIs `/urlupdate/` and `/urlupdate_batch/` for blacklist update.
+
+The `job` service is configured to send `/urlupdate_batch/1/archiving` request to `updater` service every 5 minutes.
+
+Note: it is confirmed that it takes around 0.6 seconds to get 1000 URL items into data store (redis).
+
+If you are interested in manual access, you can:
+- To add a single URL to blacklist:
+  - ```curl -X POST localhost/urlupdate/1/default/google.bad/item1.html```
+
+- To do a batch URL update on default blacklist (data/blacklist/default.txt):
   - ```curl -X POST localhost/urlupdate_batch/1/default```
-To do a batch URL with a customized blacklist, create a new blacklist file as `mylist.txt` and put it into folder `data/blacklist`, and run:
+
+- To do a batch URL with a customized blacklist, create a new blacklist file as `mylist.txt` and put it into folder `data/blacklist`, and run:
   - ```curl -X POST localhost/urlupdate_batch/1/mylist```
+
 
 
 ## **TODO**
