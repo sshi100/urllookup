@@ -14,7 +14,7 @@ Give some thought to the following:
 ## **Proposal**
 
 - For #1, put URL list in a memory data store, where can be persistent and scalable
-- For #2, introducing 3-layered scalable architecture with Load Balancer <-> Web Lookup Cluster <-> Data Store Cluster.
+- For #2, introducing scalable architecture with `Load Balancer -> Web Lookup Cluster -> Data Store Cluster <- Updater <- Scheduled Job`.
 - For #3, use another backend job to do batch update every 10 minutes for new URLs.
 
 
@@ -71,6 +71,8 @@ kcilbdyxrzyh   urllookup_updater        replicated   1/1        updater:latest  
   - urllookup_datastore(3): data store service (by redis cluster, datastore1 is the master), to store more data in memory for quick response and persistent in disk
   - urllookup_updater(1): update service to update data store based on provided default or customized URL blacklist
   - urllookup_job(1): cronjob to monitor `arriving` blacklist and apply the changes every 5 minutes
+
+Relationship: `Load Balancer -> Web Lookup Cluster -> Data Store Cluster <- Updater <- Scheduled Job`
 
 As a result, the stack guarantees to reach the 3 goals as required.
 
