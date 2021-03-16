@@ -65,7 +65,7 @@ wapn4p3biv7l   urllookup_loadbalancer   replicated   1/1        nginx:alpine    
 81ndumrl6rud   urllookup_lookup         replicated   2/2        lookupservice:latest   *:8081->8081/tcp
 kcilbdyxrzyh   urllookup_updater        replicated   1/1        updater:latest         *:8082->8082/tcp
   ```
-  with:
+  where:
   - urllookup_loadbalancer(1): load balancer service (by nginx), fast to dispatch to lookup services
   - urllookup_lookup(2): lookup service (by application cluster in python fastapi), to get data from data store service cluster
   - urllookup_datastore(3): data store service (by redis cluster, datastore1 is the master), to store more data in memory for quick response and persistent in disk
@@ -104,3 +104,4 @@ If you are interested in manual access, you can:
 
 - deploy to Kubernetes
 - deploy via CI/CD (CircleCI or GHA)
+- deploy as Service Mesh
