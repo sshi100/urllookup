@@ -13,9 +13,9 @@ Give some thought to the following:
 
 ## **Proposal**
 
-For #1, put URL list in a memory data store, where can be persistent and scalable
-For #2, introducing 3-layered scalable architecture with Load Balancer <-> Web Lookup Cluster <-> Data Store Cluster.
-For #3, use another backend job to do batch update every 10 minutes for new URLs.
+- For #1, put URL list in a memory data store, where can be persistent and scalable
+- For #2, introducing 3-layered scalable architecture with Load Balancer <-> Web Lookup Cluster <-> Data Store Cluster.
+- For #3, use another backend job to do batch update every 10 minutes for new URLs.
 
 
 ## **Solution**
