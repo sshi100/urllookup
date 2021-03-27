@@ -4,7 +4,7 @@ services:
 
   # main service, here we use a fastapi docker: https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker
   lookup:
-    image: lookupservice:latest
+    image: sshi100/lookupservice:latest
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.webservice
@@ -21,7 +21,7 @@ services:
       replicas: 2
       restart_policy:
         max_attempts: 3
-        condition: on-failure
+        condition: any
       update_config:
         parallelism: 3
         delay: 10s
@@ -31,7 +31,7 @@ services:
 
   # update service for backlist in data store
   updater:
-    image: updater:latest
+    image: sshi100/updater:latest
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.updater
@@ -53,7 +53,7 @@ services:
 
   # job to trigger updater
   job:
-    image: ofelia:latest
+    image: sshi100/ofelia:latest
     build:
       context: ../
       dockerfile: ./docker/Dockerfile.cronjob
@@ -88,6 +88,8 @@ services:
   datastore1:
     image: redis
     entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
     networks:
       data:
         ipv4_address: 10.10.20.1
@@ -96,6 +98,8 @@ services:
   datastore2:
     image: redis
     entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
     networks:
       data:
         ipv4_address: 10.10.20.2
@@ -104,6 +108,8 @@ services:
   datastore3:
     image: redis
     entrypoint: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
     networks:
       data:
         ipv4_address: 10.10.20.3
