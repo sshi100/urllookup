@@ -1,13 +1,11 @@
 version: 2.1
-
-workflows:
-  build-and-deploy:
-    docker:
-      - image: circleci/python:3.6.4
+jobs:
+  build:
+    docker: 
+      - image: cimg/node:14.10.1 # the primary container, where your job's commands are run
         auth:
           username: $DOCKERHUB_USER
-          password: $DOCKERHUB_PASSWORD
-    jobs:
-      steps:
-        - checkout
-        - run: make k8s-run
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    steps:
+      - checkout # check out the code in the project directory
+      - run: echo "hello world" # run the `echo` command
