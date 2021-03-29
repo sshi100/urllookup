@@ -15,9 +15,9 @@ push: build
 	@cd docker && docker-compose -f docker-compose-tmp.yaml push
 
 local-run:
-	@cd docer && docker-compose up -f docker-compose-tmp.yaml
+	@cd docker && docker-compose up -f docker-compose-tmp.yaml
 
-k8s-run: push
+k8s-run:
 	cd docker; \
 	kubectl delete namespace urllookup; \
 	kubectl create namespace urllookup; \
