@@ -8,7 +8,6 @@ check:
 
 build: check
 	cd docker; \
-	sed 's/sshi100/$(DOCKER_ORG_ID)/g' docker-compose.yaml > docker-compose-tmp.yaml; \
 	docker-compose build
 
 push: build
@@ -21,6 +20,7 @@ k8s-run:
 	cd docker; \
 	kubectl delete namespace urllookup; \
 	kubectl create namespace urllookup; \
+	sed 's/sshi100/$(DOCKER_ORG_ID)/g' docker-compose.yaml > docker-compose-tmp.yaml; \
 	kompose convert -f docker-compose-tmp.yaml --controller deployment --volumes configMap -o /tmp/k8s-tmp.yaml; \
 	kubectl -n urllookup apply -f /tmp/k8s-tmp.yaml
 	kubectl -n urllookup delete deployment/job
