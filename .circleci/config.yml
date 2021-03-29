@@ -1,0 +1,8 @@
+version: 2.1
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - steps:
+          - checkout
+          - run: make k8s-run
