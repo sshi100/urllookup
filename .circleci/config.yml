@@ -8,5 +8,5 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      - run: apt-get install -y kompose
+      - run: sudo apt-get install -y kompose
       - run: make k8s-run
