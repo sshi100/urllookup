@@ -16,7 +16,7 @@ jobs:
       - run: curl -L https://github.com/kubernetes/kompose/releases/download/v1.22.0/kompose-linux-amd64 -o kompose && chmod +x kompose && sudo mv ./kompose /usr/local/bin/kompose
       - run: make k8s-file
       - kubernetes/install-kubeconfig:
-          kubeconfig: $KUBECONFIG_DATA
+          kubeconfig: KUBECONFIG_DATA
       - kubernetes/create-or-update-resource:
           get-rollout-status: true
           show-kubectl-command: true
