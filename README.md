@@ -35,7 +35,7 @@ Give some thought to the following:
 
 # **Deployment**
 
-## **Stack Deployment to Docker Network**
+## **Docker Swarm**
 Use docker compose and swarm to create this application stack.
 
 1. checkout code from https://github.com/sshi100/urllookup
@@ -46,29 +46,7 @@ Use docker compose and swarm to create this application stack.
 3. service validate
   run `curl http://127.0.0.1/`, it should return `{"ping":"PONG"}`
 
-Now, the stack has been deployed successfully.
-
-*Note: to re-deploy the services, you may run `docker stack rm urllookup` and for debugging you may run `docker service logs service`.
-
-For more detailed information about docker swarm deployment, please check https://docs.docker.com/get-started/swarm-deploy/  
-
-## **Stack Deployment to Kubernetes**
-Use kocompose to convert docker-compose file to kubernetes compatible configuration. Al
-
-Supposing you already have a Kubernetes cluster running, you can run:
-```make k8s-deploy-from-local```
-or, rely on CircleCI with:
-```.circleci/config.map```
-
-Then, you will find namespace urllookup with pods.
-Then, expose the service to local for trial:
-```kubectl -n urllookup port-forward service/loadbalancer 8080:80```
-Then, run `curl http://127.0.0.1:8080/`, it should return `{"ping":"PONG"}`
-
-
-## **Stack insight**
-
-With docker swarm, run `docker service list`, you will find something as below:
+Now, the stack has been deployed successfully, and confirm with `docker service list`:
   ```
 ID             NAME                     MODE         REPLICAS   IMAGE                  PORTS
 iwnj2x3iz3d2   urllookup_datastore1     replicated   1/1        redis:latest
@@ -79,16 +57,63 @@ wapn4p3biv7l   urllookup_loadbalancer   replicated   1/1        nginx:alpine    
 81ndumrl6rud   urllookup_lookup         replicated   2/2        lookupservice:latest   *:8081->8081/tcp
 kcilbdyxrzyh   urllookup_updater        replicated   1/1        updater:latest         *:8082->8082/tcp
   ```
-  where:
+
+*Note: to re-deploy the services, you may run `docker stack rm urllookup` and for debugging you may run `docker service logs service`.
+
+For more detailed information about docker swarm deployment, please check https://docs.docker.com/get-started/swarm-deploy/  
+
+## **Kubernetes**
+Use kocompose to convert docker-compose file to kubernetes compatible configuration. Al
+
+Supposing you already have a Kubernetes cluster running in minikube/kind or cloud, you can deploy in two ways:
+
+1. from local
+```make k8s-deploy-from-local```
+
+2. from CircleCI
+Please set the following enironment variables in your CircleCI project:
+```
+DOCKER_ORG_ID
+DOCKERHUB_USER
+DOCKERHUB_PASSWORD	
+KUBECONFIG_DATA:
+```
+KUBECONFIG_DATA can be retrieved by running:
+`k8 config view --minify --flatten | base64`
+
+
+With either way, once done, confirm with `kubernetes -n urllookup get pods`:
+```
+NAME                            READY   STATUS      RESTARTS   AGE
+datastore1-77876fb8d9-scm2q     1/1     Running     0          52m
+datastore2-6f5dfb5c7c-zvlw6     1/1     Running     0          52m
+datastore3-6d48c9b6bd-rb5lq     1/1     Running     0          52m
+job-1617060600-hjk5c            0/1     Completed   0          14m
+job-1617060900-sdgcj            0/1     Completed   0          9m36s
+job-1617061200-bndnv            0/1     Completed   0          4m35s
+loadbalancer-85db7977b7-75ggl   1/1     Running     0          52m
+lookup-6b44ff5485-pt6j6         1/1     Running     0          52m
+lookup-6b44ff5485-x7892         1/1     Running     0          52m
+updater-5c9c887745-tt2x9        1/1     Running     0          52m
+```
+
+You may expose for local laptop access:
+```kubectl -n urllookup port-forward service/loadbalancer 8080:80```
+
+and confirm with `curl http://127.0.0.1:8080/`, it should return `{"ping":"PONG"}`
+
+
+## **Stack insight**
+
+Components:
   - urllookup_loadbalancer(1): load balancer service (by nginx), fast to dispatch to lookup services
   - urllookup_lookup(2): lookup service (by application cluster in python fastapi), to get data from data store service cluster
   - urllookup_datastore(3): data store service (by redis cluster, datastore1 is the master), to store more data in memory for quick response and persistent in disk
   - urllookup_updater(1): update service to update data store based on provided default or customized URL blacklist
   - urllookup_job(1): cronjob to monitor `arriving` blacklist and apply the changes every 5 minutes
 
-Relationship: `Load Balancer -> Web Lookup Cluster -> Data Store Cluster <- Updater <- Scheduled Job`
-
-As a result, the stack guarantees to reach the 3 goals as required.
+Relationship: 
+`Load Balancer -> Web Lookup Cluster -> Data Store Cluster <- Updater <- Scheduled Job`
 
 
 # **Usage**
