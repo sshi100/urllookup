@@ -22,4 +22,4 @@ jobs:
           show-kubectl-command: true
           namespace: urllookup
           resource-file-path: /tmp/k8s-tmp.yaml
-          resource-name: deployment/urllookup
+          resource-name: deployment/lookup
