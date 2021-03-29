@@ -19,7 +19,7 @@ local-run:
 k8s-prep:
 	cd docker; \
 	sed 's/sshi100/$(DOCKER_ORG_ID)/g' docker-compose.yaml > docker-compose-tmp.yaml; \
-	kubectk create namespace urllookup; \
+	kubectl create namespace urllookup; \
 	kompose convert -f docker-compose-tmp.yaml --controller deployment --volumes configMap -o /tmp/k8s-tmp.yaml;
 
 k8s-deploy-from-local: k8s-prep
