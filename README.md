@@ -33,28 +33,42 @@ Give some thought to the following:
   - docker swarm cluster
 
 
-## **Stack Deployment**
+# **Deployment**
+
+## **Stack Deployment to Docker Network**
 Use docker compose and swarm to create this application stack.
 
 1. checkout code from https://github.com/sshi100/urllookup
 
 2. build and deploy
-
-  - ```cd docker; docker-compose build; docker swarm init; docker stack deploy --compose-file docker-compose.yml urllookup```
+  run ```make local-run```
 
 3. service validate
   run `curl http://127.0.0.1/`, it should return `{"ping":"PONG"}`
 
 Now, the stack has been deployed successfully.
 
-*Note: to re-deploy the services, you may run `docker stack rm urllookup` and for debugging you may run `docker service logs <service>`.
+*Note: to re-deploy the services, you may run `docker stack rm urllookup` and for debugging you may run `docker service logs service`.
 
 For more detailed information about docker swarm deployment, please check https://docs.docker.com/get-started/swarm-deploy/  
+
+## **Stack Deployment to Kubernetes**
+Use kocompose to convert docker-compose file to kubernetes compatible configuration. Al
+
+Supposing you already have a Kubernetes cluster running, you can run:
+```make k8s-deploy-from-local```
+or, rely on CircleCI with:
+```.circleci/config.map```
+
+Then, you will find namespace urllookup with pods.
+Then, expose the service to local for trial:
+```kubectl -n urllookup port-forward service/loadbalancer 8080:80```
+Then, run `curl http://127.0.0.1:8080/`, it should return `{"ping":"PONG"}`
 
 
 ## **Stack insight**
 
-  run `docker service list`, you will find something as below:
+With docker swarm, run `docker service list`, you will find something as below:
   ```
 ID             NAME                     MODE         REPLICAS   IMAGE                  PORTS
 iwnj2x3iz3d2   urllookup_datastore1     replicated   1/1        redis:latest
@@ -76,6 +90,8 @@ Relationship: `Load Balancer -> Web Lookup Cluster -> Data Store Cluster <- Upda
 
 As a result, the stack guarantees to reach the 3 goals as required.
 
+
+# **Usage**
 
 ## **URL lookup**
 
@@ -102,8 +118,5 @@ If you are interested in manual access, you can:
 
 
 
-## **TODO**
-
-- deploy to Kubernetes
-- deploy via CI/CD (CircleCI or GHA)
+# **TODO**
 - deploy as Service Mesh
