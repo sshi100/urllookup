@@ -16,15 +16,14 @@ push: build
 local-run:
 	@cd docker && docker-compose up -f docker-compose-tmp.yaml
 
-k8s-file:
+k8s-prep:
 	cd docker; \
 	sed 's/sshi100/$(DOCKER_ORG_ID)/g' docker-compose.yaml > docker-compose-tmp.yaml; \
+	kubectk create namespace urllookup; \
 	kompose convert -f docker-compose-tmp.yaml --controller deployment --volumes configMap -o /tmp/k8s-tmp.yaml;
 
-k8s-run: k8s-file
+k8s-deploy-from-local: k8s-prep
 	cd docker; \
-	kubectl delete namespace urllookup; \
-	kubectl create namespace urllookup; \
 	kubectl -n urllookup apply -f /tmp/k8s-tmp.yaml
 	kubectl -n urllookup delete deployment/job
 	kubectl -n urllookup apply -f job-deployment-k8s.yaml
