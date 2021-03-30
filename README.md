@@ -35,7 +35,7 @@ Give some thought to the following:
 
 # **Deployment**
 
-## **Docker Swarm**
+## **To Docker Swarm**
 Use docker compose and swarm to create this application stack.
 
 1. checkout code from https://github.com/sshi100/urllookup
@@ -62,10 +62,10 @@ kcilbdyxrzyh   urllookup_updater        replicated   1/1        updater:latest  
 
 For more detailed information about docker swarm deployment, please check https://docs.docker.com/get-started/swarm-deploy/  
 
-## **Kubernetes**
-Use kocompose to convert docker-compose file to kubernetes compatible configuration. Al
+## **To Kubernetes**
+Use kocompose to convert docker-compose file to kubernetes compatible configuration.
 
-Supposing you already have a Kubernetes cluster running in minikube/kind or cloud, you can deploy in two ways:
+Supposing you already have a Kubernetes cluster running under minikube/kind or public cloud, you can deploy in two ways:
 
 1. from local
 ```make k8s-deploy-from-local```
@@ -76,9 +76,9 @@ Please set the following enironment variables in your CircleCI project:
 DOCKER_ORG_ID
 DOCKERHUB_USER
 DOCKERHUB_PASSWORD	
-KUBECONFIG_DATA:
+KUBECONFIG_DATA
 ```
-KUBECONFIG_DATA can be retrieved by running:
+in which, KUBECONFIG_DATA can be retrieved by running:
 `k8 config view --minify --flatten | base64`
 
 
